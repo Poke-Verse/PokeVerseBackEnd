@@ -1,6 +1,6 @@
 const express = require("express");
 const router = require("express").Router();
-const { db, users, pokemon } = require("../models");
+const { db, users, pokemon, admin } = require("../models");
 
 // Get route for all pokemon
 router.get("/", (req, res) => {
@@ -41,5 +41,8 @@ router.get("/:type", (req, res) => {
         res.json(data);
     });
 });
+
+//export the router
+module.exports = router;
 
 
