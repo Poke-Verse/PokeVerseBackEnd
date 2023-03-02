@@ -16,5 +16,15 @@
   "bugs": {
     "url": "https://github.com/Poke-Verse/PokeVerseBackEnd/issues"
   },
-  "homepage": "https://github.com/Poke-Verse/PokeVerseBackEnd#readme"
+  "homepage": "https://github.com/Poke-Verse/PokeVerseBackEnd#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sequelize": "^6.29.0",
+    "sqlite3": "^5.1.4"
+  },
+  "devDependencies": {
+    "jest": "^29.4.3",
+    "nodemon": "^2.0.21",
+    "dotenv": "^16.0.3"
+  }
 }
