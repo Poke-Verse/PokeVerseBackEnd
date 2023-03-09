@@ -9,4 +9,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use("./api", require("./routes"));
 
+// Auth Middleware
+app.use(async (req, res, next) => {
+    const auth = req.header("Authorization")
+    if(!auth){
+        next();
+    }else{
+        next()
+    }
+})
+
 module.exports = { app };
