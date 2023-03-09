@@ -53,11 +53,8 @@ router.post('/register', async (req, res) => {
     const { firstName, password } = req.body;
     try {
         await sequelize.sync({force: true});
-        // Hash the password with bcrypt.hash
         const hashedPassword = await bcrypt.hash(password, 10);
-        // Call User.create (User is already imported above)
         const user = await User.create({ firstName : firstName, password: hashedPassword });
-        // Send back a success message (a string) per the test specs.
         console.log(user)
         res.send(`successfully created user ${user.firstName}`);
     } catch (error) {
@@ -86,5 +83,4 @@ router.post('/login', async (req, res) => {
     }
   });
 
-//export the router
 module.exports = router;
