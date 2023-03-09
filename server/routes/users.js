@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { db, users, pokemon, admin } = require("../models");
+// const { db, users, pokemon, admin } = require("../models");
 
 // GET route for all users
 router.get("/", (req, res) => {

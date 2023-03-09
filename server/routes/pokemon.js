@@ -1,6 +1,6 @@
 const express = require("express");
 const router = require("express").Router();
-const { db, users, pokemon, admin } = require("../models");
+// const { db, users, pokemon, admin } = require("../models");
 
 // Get route for all pokemon
 router.get("/", (req, res) => {
