@@ -1,86 +1,146 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { User } = require('../models/user');
+const { User } = require("../db/index");
 const { JWT_SECRET } = process.env;
 
-// const { db, users, pokemon, admin } = require("../models");
-
 // GET route for all users
-router.get("/", (req, res) => {
-    users.findAll().then((data) => {
-        res.json(data);
-    });
+router.get("/", async (req, res) => {
+    const users = await User.findAll();
+    if (users.length == 0) {
+        res.send([]);
+    }
+    res.send(users);
 });
 
 // GET route for a specific user by id
-router.get("/:id", (req, res) => {
-    users.findByPk({
-        where: {
-            id: req.params.id,
-        },
-    }).then((data) => {
-        res.json(data);
-    });
+router.get("/:id", async (req, res) => {
+    const user = await User.findByPk(req.params.id);
+    if (user == null) {
+        res.status(400).send("No user with that id.");
+    }
+    res.send(user);
 });
 
 // GET route for a specific user by name
-router.get("/:name", (req, res) => {
-    users.findOne({
+router.get("/:name", async (req, res) => {
+    const user = await User.findOne({
         where: {
             name: req.params.name,
         },
-    }).then((data) => {
-        res.json(data);
     });
+    if (user == null) {
+        res.status(400).send("No user with that name.");
+    }
+    res.send(user);
 });
 
 // GET route for a specific user by email
-router.get("/:email", (req, res) => {
-    users.findOne({
+router.get("/:email", async (req, res) => {
+    const user = await User.findOne({
         where: {
             email: req.params.email,
         },
-    }).then((data) => {
-        res.json(data);
     });
+    if (user == null) {
+        res.status(400).send("No user with that email.");
+    }
+    res.send(user);
 });
 
-router.post('/register', async (req, res) => {
-    const { firstName, password } = req.body;
+// POST route to register a new user
+router.post("/register", async (req, res) => {
+    const { email, password } = req.body;
     try {
-        await sequelize.sync({force: true});
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ firstName : firstName, password: hashedPassword });
-        console.log(user)
-        res.send(`successfully created user ${user.firstName}`);
+        const user = await User.create({
+            email: email,
+            password: hashedPassword,
+        });
+        res.send("Successfully created user");
     } catch (error) {
-        console.error(error);
-        next(error)
+        res.send(error);
     }
 });
-  
-router.post('/login', async (req, res) => {
-    const { firstName, password } = req.body;
+
+// POST route to login for users
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
     try {
-      const user = await User.findOne({ where: { firstName } });
-      if (!user) {
-        return res.status(401).send({ message: 'Invalid firstName or password' });
-      }
-      // Compare the submitted password to the hashed password stored in the database
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        return res.status(401).send({ message: 'Invalid firstName or password' });
-      }
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-      res.send({ user, token });
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res
+                .status(401)
+                .send({ message: "Invalid firstName or password" });
+        }
+        // Compare the submitted password to the hashed password stored in the database
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return res
+                .status(401)
+                .send({ message: "Invalid email or password" });
+        }
+        const token = jwt.sign({ id: user.id }, JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        res.send({ user, token });
     } catch (err) {
-      console.log(err);
-      res.status(400).send({ message: 'Invalid firstName or password' });
+        res.status(401).send("Invalid email or password");
     }
-  });
+});
+
+// PUT route to update an user using the ID as PK.
+router.put("/:id", async (req, res) => {
+    const {
+        firstName,
+        lastName,
+        email,
+        password,
+        age,
+        favoritePokemon,
+        avatarImg,
+        isAdmin,
+    } = req.body;
+
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (user == null) {
+            res.status(400).send(
+                `User with id: ${req.params.id} was not found`
+            );
+        }
+        user.update({
+            firstName,
+            lastName,
+            email,
+            password,
+            age,
+            favoritePokemon,
+            avatarImg,
+            isAdmin,
+        });
+        res.send(user);
+    } catch (e) {
+        res.send(e);
+    }
+});
+
+router.delete("/:id", async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (!user) {
+            res.status(400).send(
+                `User with id: ${req.params.id} was not found.`
+            );
+        }
+        await user.destroy();
+        res.send(`User with id: ${req.params.id} was deleted.`);
+    } catch (e) {
+        res.status(400).send(e);
+    }
+});
 
 module.exports = router;
