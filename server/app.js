@@ -7,6 +7,7 @@ const app = express();
 // parsing middleware for form input data & json
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+// Review -- in the next line below, is the . in the path for this middleware intentional?
 app.use("./api", require("./routes"));
 
 // Auth Middleware
