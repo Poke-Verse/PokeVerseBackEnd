@@ -12,8 +12,9 @@ router.get("/", async (req, res) => {
     const users = await User.findAll();
     if (users.length == 0) {
         res.send([]);
+    } else {
+        res.send(users);
     }
-    res.send(users);
 });
 
 // GET route for a specific user by id
@@ -21,8 +22,9 @@ router.get("/:id", async (req, res) => {
     const user = await User.findByPk(req.params.id);
     if (user == null) {
         res.status(400).send("No user with that id.");
+    } else {
+        res.send(user);
     }
-    res.send(user);
 });
 
 // GET route for a specific user by name
@@ -34,8 +36,9 @@ router.get("/:name", async (req, res) => {
     });
     if (user == null) {
         res.status(400).send("No user with that name.");
+    } else {
+        res.send(user);
     }
-    res.send(user);
 });
 
 // GET route for a specific user by email
@@ -47,8 +50,9 @@ router.get("/:email", async (req, res) => {
     });
     if (user == null) {
         res.status(400).send("No user with that email.");
+    } else {
+        res.send(user);
     }
-    res.send(user);
 });
 
 // POST route to register a new user
@@ -105,13 +109,10 @@ router.put("/:id", async (req, res) => {
         isAdmin,
     } = req.body;
 
-    try {
-        const user = await User.findByPk(req.params.id);
-        if (user == null) {
-            res.status(400).send(
-                `User with id: ${req.params.id} was not found`
-            );
-        }
+    const user = await User.findByPk(req.params.id);
+    if (user == null) {
+        res.status(400).send(`User with id: ${req.params.id} was not found`);
+    } else {
         user.update({
             firstName,
             lastName,
@@ -123,23 +124,16 @@ router.put("/:id", async (req, res) => {
             isAdmin,
         });
         res.send(user);
-    } catch (e) {
-        res.send(e);
     }
 });
 
 router.delete("/:id", async (req, res) => {
-    try {
-        const user = await User.findByPk(req.params.id);
-        if (!user) {
-            res.status(400).send(
-                `User with id: ${req.params.id} was not found.`
-            );
-        }
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+        res.status(400).send(`User with id: ${req.params.id} was not found.`);
+    } else {
         await user.destroy();
         res.send(`User with id: ${req.params.id} was deleted.`);
-    } catch (e) {
-        res.status(400).send(e);
     }
 });
 
