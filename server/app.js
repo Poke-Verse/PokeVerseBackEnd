@@ -14,7 +14,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 app.use(async (req, res, next) => {
     const auth = req.header("Authorization");
     if (!auth) {
-        console.log("No auth");
         next();
     } else {
         const [, token] = auth.split(" ");
@@ -23,7 +22,6 @@ app.use(async (req, res, next) => {
             req.token = jwt.verify(token, JWT_SECRET);
             next();
         } catch (e) {
-            console.log("catch");
             res.status(401).send("Token not valid");
         }
     }

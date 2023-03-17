@@ -10,7 +10,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // GET route for all users
 router.get("/", async (req, res) => {
-    console.log(req.token);
     if (!req.token) {
         res.status(401).send("Unauthorized");
     } else {
@@ -75,7 +74,6 @@ router.get("/:email", async (req, res) => {
 
 // POST route to register a new user
 router.post("/register", async (req, res) => {
-    console.log("Register endpoint");
     const { email, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -83,11 +81,9 @@ router.post("/register", async (req, res) => {
             email: email,
             password: hashedPassword,
         });
-        console.log(user.id);
         const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
             expiresIn: "1h",
         });
-        console.log(token);
         res.send({ user, token });
     } catch (error) {
         res.send(error);
@@ -99,8 +95,7 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ where: { email } });
-        console.log(user);
-        console.log(user.email);
+
         if (!user) {
             res.status(401).send({ message: "Invalid firstName or password" });
         }
@@ -109,11 +104,9 @@ router.post("/login", async (req, res) => {
         if (!passwordMatch) {
             res.status(401).send({ message: "Invalid email or password" });
         } else {
-            console.log("Signing token with: " + JWT_SECRET);
             const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
                 expiresIn: "1h",
             });
-            console.log(token);
             res.send({ user, token });
         }
     } catch (err) {
