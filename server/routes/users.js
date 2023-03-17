@@ -5,58 +5,77 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const { User } = require("../db/index");
-const { JWT_SECRET } = process.env;
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // GET route for all users
 router.get("/", async (req, res) => {
-    const users = await User.findAll();
-    if (users.length == 0) {
-        res.send([]);
+    console.log(req.token);
+    if (!req.token) {
+        res.status(401).send("Unauthorized");
     } else {
-        res.send(users);
+        const users = await User.findAll();
+        if (users.length == 0) {
+            res.send([]);
+        } else {
+            res.send(users);
+        }
     }
 });
 
 // GET route for a specific user by id
 router.get("/:id", async (req, res) => {
-    const user = await User.findByPk(req.params.id);
-    if (user == null) {
-        res.status(400).send("No user with that id.");
+    if (!req.token) {
+        res.status(401).send("Unauthorized");
     } else {
-        res.send(user);
+        const user = await User.findByPk(req.params.id);
+        if (user == null) {
+            res.status(400).send("No user with that id.");
+        } else {
+            res.send(user);
+        }
     }
 });
 
 // GET route for a specific user by name
 router.get("/:name", async (req, res) => {
-    const user = await User.findOne({
-        where: {
-            name: req.params.name,
-        },
-    });
-    if (user == null) {
-        res.status(400).send("No user with that name.");
+    if (!req.token) {
+        res.status(401).send("Unauthorized");
     } else {
-        res.send(user);
+        const user = await User.findOne({
+            where: {
+                name: req.params.name,
+            },
+        });
+        if (user == null) {
+            res.status(400).send("No user with that name.");
+        } else {
+            res.send(user);
+        }
     }
 });
 
 // GET route for a specific user by email
 router.get("/:email", async (req, res) => {
-    const user = await User.findOne({
-        where: {
-            email: req.params.email,
-        },
-    });
-    if (user == null) {
-        res.status(400).send("No user with that email.");
+    if (!req.token) {
+        res.status(401).send("Unauthorized");
     } else {
-        res.send(user);
+        const user = await User.findOne({
+            where: {
+                email: req.params.email,
+            },
+        });
+        if (user == null) {
+            res.status(400).send("No user with that email.");
+        } else {
+            res.send(user);
+        }
     }
 });
 
 // POST route to register a new user
 router.post("/register", async (req, res) => {
+    console.log("Register endpoint");
     const { email, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -64,7 +83,12 @@ router.post("/register", async (req, res) => {
             email: email,
             password: hashedPassword,
         });
-        res.send("Successfully created user");
+        console.log(user.id);
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        console.log(token);
+        res.send({ user, token });
     } catch (error) {
         res.send(error);
     }
@@ -75,22 +99,23 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ where: { email } });
+        console.log(user);
+        console.log(user.email);
         if (!user) {
-            return res
-                .status(401)
-                .send({ message: "Invalid firstName or password" });
+            res.status(401).send({ message: "Invalid firstName or password" });
         }
         // Compare the submitted password to the hashed password stored in the database
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res
-                .status(401)
-                .send({ message: "Invalid email or password" });
+            res.status(401).send({ message: "Invalid email or password" });
+        } else {
+            console.log("Signing token with: " + JWT_SECRET);
+            const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+                expiresIn: "1h",
+            });
+            console.log(token);
+            res.send({ user, token });
         }
-        const token = jwt.sign({ id: user.id }, JWT_SECRET, {
-            expiresIn: "1h",
-        });
-        res.send({ user, token });
     } catch (err) {
         res.status(401).send("Invalid email or password");
     }
@@ -98,22 +123,10 @@ router.post("/login", async (req, res) => {
 
 // PUT route to update an user using the ID as PK.
 router.put("/:id", async (req, res) => {
-    const {
-        firstName,
-        lastName,
-        email,
-        password,
-        age,
-        favoritePokemon,
-        avatarImg,
-        isAdmin,
-    } = req.body;
-
-    const user = await User.findByPk(req.params.id);
-    if (user == null) {
-        res.status(400).send(`User with id: ${req.params.id} was not found`);
+    if (!req.token) {
+        res.status(401).send("Unauthorized");
     } else {
-        user.update({
+        const {
             firstName,
             lastName,
             email,
@@ -122,18 +135,42 @@ router.put("/:id", async (req, res) => {
             favoritePokemon,
             avatarImg,
             isAdmin,
-        });
-        res.send(user);
+        } = req.body;
+
+        const user = await User.findByPk(req.params.id);
+        if (user == null) {
+            res.status(400).send(
+                `User with id: ${req.params.id} was not found`
+            );
+        } else {
+            user.update({
+                firstName,
+                lastName,
+                email,
+                password,
+                age,
+                favoritePokemon,
+                avatarImg,
+                isAdmin,
+            });
+            res.send(user);
+        }
     }
 });
 
 router.delete("/:id", async (req, res) => {
-    const user = await User.findByPk(req.params.id);
-    if (!user) {
-        res.status(400).send(`User with id: ${req.params.id} was not found.`);
+    if (!req.token) {
+        res.status(401).send("Unauthorized");
     } else {
-        await user.destroy();
-        res.send(`User with id: ${req.params.id} was deleted.`);
+        const user = await User.findByPk(req.params.id);
+        if (!user) {
+            res.status(400).send(
+                `User with id: ${req.params.id} was not found.`
+            );
+        } else {
+            await user.destroy();
+            res.send(`User with id: ${req.params.id} was deleted.`);
+        }
     }
 });
 
