@@ -1,0 +1,19 @@
+{
+    "name": "pokemon-seed-data",
+    "version": "1.0.0",
+    "description": "Seed data for Pokemon",
+    "main": "index.js",
+    "dependencies": {
+      "pokemon": "^1.0.0",
+      "faker": "^5.5.3"
+    },
+    "devDependencies": {},
+    "scripts": {
+      "start": "node index.js",
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "seed": "nom run start && nom run seed" 
+    },
+    "author": "Team pokeVerse",
+    "license": "Multiverse?"
+  }
+  
