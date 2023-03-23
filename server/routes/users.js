@@ -150,7 +150,7 @@ router.put("/:id", async (req, res) => {
         }
     }
 });
-
+// DELETE route to delete an user using the ID as PK.
 router.delete("/:id", async (req, res) => {
     if (!req.token) {
         res.status(401).send("Unauthorized");
