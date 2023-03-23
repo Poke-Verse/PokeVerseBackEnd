@@ -127,7 +127,7 @@ router.put("/:id", async (req, res) => {
         res.send(e);
     }
 });
-
+// DELETE route to delete an user using the ID as PK.
 router.delete("/:id", async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
