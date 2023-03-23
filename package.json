@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest ",
     "start": "node ./server.js",
-    "start-dev": "nodemon ./server.js"
+    "start-dev": "node ./server/db/seed.js && nodemon ./server.js",
+    "seed": "node ./server/db/seed.js"
   },
   "repository": {
     "type": "git",
