@@ -3,6 +3,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const express = require("express");
 const app = express();
+const { decodeToken } = require("./auth/decodeToken");
 
 // parsing middleware for form input data & json
 app.use(express.urlencoded({ extended: false }));
@@ -20,6 +21,8 @@ app.use(async (req, res, next) => {
 
         try {
             req.token = jwt.verify(token, JWT_SECRET);
+            const payload = decodeToken(token);
+            req.userId = payload.userId;
             next();
         } catch (e) {
             res.status(401).send("Token not valid");
