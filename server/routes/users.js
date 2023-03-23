@@ -11,13 +11,17 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // GET route for all users
 router.get("/", async (req, res) => {
     if (!req.token) {
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Unauthenticated");
     } else {
-        const users = await User.findAll();
-        if (users.length == 0) {
-            res.send([]);
+        if (await isAdmin(req.userId)) {
+            const users = await User.findAll();
+            if (users.length == 0) {
+                res.send([]);
+            } else {
+                res.send(users);
+            }
         } else {
-            res.send(users);
+            res.status(403).send("Unauthorized");
         }
     }
 });
@@ -25,13 +29,17 @@ router.get("/", async (req, res) => {
 // GET route for a specific user by id
 router.get("/:id", async (req, res) => {
     if (!req.token) {
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Unauthenticated");
     } else {
-        const user = await User.findByPk(req.params.id);
-        if (user == null) {
-            res.status(400).send("No user with that id.");
+        if (req.params.id == req.userId || (await isAdmin(req.userId))) {
+            const user = await User.findByPk(req.params.id);
+            if (user == null) {
+                res.status(400).send("No user with that id.");
+            } else {
+                res.send(user);
+            }
         } else {
-            res.send(user);
+            res.status(403).send("Unauthorized");
         }
     }
 });
@@ -39,17 +47,22 @@ router.get("/:id", async (req, res) => {
 // GET route for a specific user by name
 router.get("/:name", async (req, res) => {
     if (!req.token) {
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Unauthenticated");
     } else {
         const user = await User.findOne({
             where: {
                 name: req.params.name,
             },
         });
+
         if (user == null) {
             res.status(400).send("No user with that name.");
         } else {
-            res.send(user);
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                res.send(user);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
         }
     }
 });
@@ -57,7 +70,7 @@ router.get("/:name", async (req, res) => {
 // GET route for a specific user by email
 router.get("/:email", async (req, res) => {
     if (!req.token) {
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Unauthenticated");
     } else {
         const user = await User.findOne({
             where: {
@@ -65,9 +78,13 @@ router.get("/:email", async (req, res) => {
             },
         });
         if (user == null) {
-            res.status(400).send("No user with that email.");
+            res.status(400).send("No user with that name.");
         } else {
-            res.send(user);
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                res.send(user);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
         }
     }
 });
@@ -117,7 +134,7 @@ router.post("/login", async (req, res) => {
 // PUT route to update an user using the ID as PK.
 router.put("/:id", async (req, res) => {
     if (!req.token) {
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Unauthenticated");
     } else {
         const {
             firstName,
@@ -127,44 +144,59 @@ router.put("/:id", async (req, res) => {
             age,
             favoritePokemon,
             avatarImg,
-            isAdmin,
         } = req.body;
 
         const user = await User.findByPk(req.params.id);
+
         if (user == null) {
-            res.status(400).send(
-                `User with id: ${req.params.id} was not found`
-            );
+            res.status(400).send("No user with that name.");
         } else {
-            user.update({
-                firstName,
-                lastName,
-                email,
-                password,
-                age,
-                favoritePokemon,
-                avatarImg,
-                isAdmin,
-            });
-            res.send(user);
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                user.update({
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    age,
+                    favoritePokemon,
+                    avatarImg,
+                });
+                res.send(user);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
         }
     }
 });
 // DELETE route to delete an user using the ID as PK.
 router.delete("/:id", async (req, res) => {
     if (!req.token) {
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Unauthenticated");
     } else {
         const user = await User.findByPk(req.params.id);
-        if (!user) {
+        if (user == null) {
             res.status(400).send(
                 `User with id: ${req.params.id} was not found.`
             );
         } else {
-            await user.destroy();
-            res.send(`User with id: ${req.params.id} was deleted.`);
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                await user.destroy();
+                res.send(`User with id: ${req.params.id} was deleted.`);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
         }
     }
 });
 
+const isAdmin = async (userId) => {
+    const user = await User.findByPk(userId);
+    if (user) {
+        if (user.isAdmin == null || !user.isAdmin) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+};
 module.exports = router;
