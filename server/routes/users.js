@@ -116,22 +116,36 @@ router.post("/login", async (req, res) => {
         if (!user) {
             res.status(401).send({ message: "Invalid firstName or password" });
         }
-        // Compare the submitted password to the hashed password stored in the database
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-            res.status(401).send({ message: "Invalid email or password" });
+
+        // If user is admin (since we didn't think this before hand. We don't want to compare passwords using bcrypt)
+        if (user.isAdmin) {
+            if (user.password == password) {
+                // Admin token will be good for 10 hours.
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+                    expiresIn: "10h",
+                });
+                res.send({ user, token });
+            } else {
+                res.status(401).send({ message: "Invalid email or password" });
+            }
         } else {
-            const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-                expiresIn: "1h",
-            });
-            res.send({ user, token });
+            // Compare the submitted password to the hashed password stored in the database
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (!passwordMatch) {
+                res.status(401).send({ message: "Invalid email or password" });
+            } else {
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+                    expiresIn: "1h",
+                });
+                res.send({ user, token });
+            }
         }
     } catch (err) {
         res.status(401).send("Invalid email or password");
     }
 });
 
-// PUT route to update an user using the ID as PK.
+// PUT route to update a user using the ID as PK.
 router.put("/:id", async (req, res) => {
     if (!req.token) {
         res.status(401).send("Unauthenticated");
