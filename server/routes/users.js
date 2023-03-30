@@ -145,7 +145,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// PUT route to update an user using the ID as PK.
+// PUT route to update a user using the ID as PK.
 router.put("/:id", async (req, res) => {
     if (!req.token) {
         res.status(401).send("Unauthenticated");
