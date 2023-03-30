@@ -45,13 +45,13 @@ router.get("/:id", async (req, res) => {
 });
 
 // GET route for a specific user by name
-router.get("/:name", async (req, res) => {
+router.get("/name/:name", async (req, res) => {
     if (!req.token) {
         res.status(401).send("Unauthenticated");
     } else {
         const user = await User.findOne({
             where: {
-                name: req.params.name,
+                firstName: req.params.name,
             },
         });
 
@@ -68,7 +68,7 @@ router.get("/:name", async (req, res) => {
 });
 
 // GET route for a specific user by email
-router.get("/:email", async (req, res) => {
+router.get("/email/:email", async (req, res) => {
     if (!req.token) {
         res.status(401).send("Unauthenticated");
     } else {
