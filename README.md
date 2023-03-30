@@ -18,6 +18,8 @@ To install this project, follow these steps:
 
 1. Clone the repository using `git clone https://github.com/Poke-Verse/PokeVerseBackEnd`
 2. Install the required dependencies using `npm install`
+3. Add a .env file in the root folder. The file should have: PORT="Any port you want for example 3000" and JWT_SECRET="With a paraphrase you want to use, for example: 'kdjgjkdf'"
+4. Run ```npm run start-dev``` or ```npm run seed && npm run start```
 
 ## User Endpoints (User GET Requests)
 
