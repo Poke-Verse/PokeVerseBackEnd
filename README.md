@@ -59,10 +59,10 @@ This route is used to get all pokemon in the database
 2. "/:id"
 This route is used to get all pokemon in the database by id
 
-3. "/:name"
+3. "/name/:name"
 This route is used to get pokemon in the database by their name
 
-4. "/:type"
+4. "/type/:type"
 This route is used to get pokemon in the database by their type
 
 ## Admin Endpoints (GET Requests)
@@ -71,12 +71,13 @@ This route is used to get pokemon in the database by their type
 This route is used to get all Admins in the database
 
 2. "/:id"
-This route is used to get all Admins in thr database by their id
+This route is used to get one admin in the database by their id
 
-3. "/:name"
-This route is used to get all Admins in the database by their name
+3. "/name/:name"
+This route is used to get one admin in the database by their name
 
-
+4. "/email/:email"
+This route is used to get one admin in the database by their email
 
 
 
