@@ -11,7 +11,7 @@
     "scripts": {
       "start": "node index.js",
       "test": "echo \"Error: no test specified\" && exit 1",
-      "seed": "nom run start && nom run seed" 
+      "seed": "npm run start && npm run seed" 
     },
     "author": "Team pokeVerse",
     "license": "Multiverse?"
