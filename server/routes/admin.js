@@ -1,43 +1,77 @@
 const express = require("express");
 const router = express.Router();
-// const { db, users, pokemon, admin } = require("../models");
+const { User } = require("../db/index");
 
 // GET route for all admins
-router.get("/", (req, res) => {
-    admin.findAll().then((data) => {
-        res.json(data);
+router.get("/", async (req, res) => {
+    const admins = await User.findAll({
+        where: {
+            isAdmin: true,
+        },
     });
+    if (!admins) {
+        res.status(400).send("Applciation has no admins");
+    } else {
+        res.send(admins);
+    }
 });
 
 // GET route for a specific admin by id
-router.get("/:id", (req, res) => {
-    admin.findByPk({
-        where: {
-            id: req.params.id,
-        },
-    }).then((data) => {
-        res.json(data);
-    });
+router.get("/:id", async (req, res) => {
+    const user = await User.findByPk(req.params.id);
+
+    if (!user) {
+        res.status(400).send(`No admin with id: ${req.params.id}`);
+    } else {
+        if (!user.isAdmin) {
+            res.status(400).send(
+                `User with id: ${req.params.id} is not an admin.`
+            );
+        } else {
+            res.send(user);
+        }
+    }
 });
 
 // GET route for a specific admin by name
-router.get("/:name", (req, res) => {
-    admin.findOne({
+router.get("/name/:name", async (req, res) => {
+    const user = await User.findOne({
         where: {
-            name: req.params.name,
+            firstName: req.params.name,
         },
-    }).then((data) => {
-        res.json(data);
     });
+    if (!user) {
+        res.status(400).send(`No admin with name: ${req.params.name}`);
+    } else {
+        if (!user.isAdmin) {
+            res.status(400).send(
+                `User with name: ${req.params.name} is not an admin.`
+            );
+        } else {
+            res.send(user);
+        }
+    }
 });
 
 // GET route for a specific admin by email
-router.get("/:email", (req, res) => {
-    admin.findOne({
+router.get("/email/:email", async (req, res) => {
+    const user = await User.findOne({
         where: {
             email: req.params.email,
         },
-    }).then((data) => {
-        res.json(data);
     });
+
+    if (!user) {
+        res.status(400).send(`No admin with email: ${req.params.email}`);
+    } else {
+        if (!user.isAdmin) {
+            res.status(400).send(
+                `User with email: ${req.params.email} is not an admin.`
+            );
+        } else {
+            res.send(user);
+        }
+    }
 });
+
+module.exports = router;
