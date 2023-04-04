@@ -1,4 +1,4 @@
-const { DataTypes } = require("@sequelize/core");
+const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/db");
 
 const Pokemon = sequelize.define("pokemon", {
