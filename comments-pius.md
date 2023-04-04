@@ -9,13 +9,13 @@ Feel free to delete file as needed.  Comments below are from Pius as of 3/15/23 
 ### Technical Goals
 
 1. Requirements:
-    - Storing the Admin passwords directly in the db is unsafe.  Hash the password before seeding; store the plaintext password somewhere else.  Is that just for demo purposes?  Fortunately you do hash the passwords for new regular users, and you check the hashes, so that's good.
+    - Storing the Admin passwords directly in the db is unsafe (as you noted in the code check-in in Week 9).  Hash the password before seeding; store the plaintext password somewhere else.  Is that just for demo purposes?  Fortunately you do hash the passwords for new regular users, and you check the hashes, so that's good.
 2. Testing:
-
+    - Sample tests would be helpful so there's a record of testing, since you don't use Jest or the Supertest library.  Could list sample Postman requests in the Readme, share Postman collection, etc.
 3. Logic:
     - Seeding the database works well.
-
-
+    - Agreed that code organization is good, separate folders for db, models, routes.
+    - Had to redefine the references to the sequelize library in the user and pokemon models to get server working.
 4. Style:
     - README could be more specific about the endpoint URLs, e.g. `/api/users/` as root URL for the users.
     - README: What body params are needed for the POST/PUT requests?  Any query params needed? for GET requests?
