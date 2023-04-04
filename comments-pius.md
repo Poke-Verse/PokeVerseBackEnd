@@ -9,13 +9,17 @@ Feel free to delete file as needed.  Comments below are from Pius as of 3/15/23 
 ### Technical Goals
 
 1. Requirements:
-
+    - Storing the Admin passwords directly in the db is unsafe.  Hash the password before seeding; store the plaintext password somewhere else.  Is that just for demo purposes?  Fortunately you do hash the passwords for new regular users, and you check the hashes, so that's good.
 2. Testing:
 
 3. Logic:
+    - Seeding the database works well.
+
 
 4. Style:
-
+    - README could be more specific about the endpoint URLs, e.g. `/api/users/` as root URL for the users.
+    - README: What body params are needed for the POST/PUT requests?  Any query params needed? for GET requests?
+    - README: What's the workflow for using the API?  Should I register first? 
 ### Collaboration Goals
 
 1. Commit history shows descriptive messages.
