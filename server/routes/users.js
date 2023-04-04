@@ -1,86 +1,216 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { User } = require('../models/user');
-const { JWT_SECRET } = process.env;
+const { User } = require("../db/index");
 
-// const { db, users, pokemon, admin } = require("../models");
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // GET route for all users
-router.get("/", (req, res) => {
-    users.findAll().then((data) => {
-        res.json(data);
-    });
+router.get("/", async (req, res) => {
+    if (!req.token) {
+        res.status(401).send("Unauthenticated");
+    } else {
+        if (await isAdmin(req.userId)) {
+            const users = await User.findAll();
+            if (users.length == 0) {
+                res.send([]);
+            } else {
+                res.send(users);
+            }
+        } else {
+            res.status(403).send("Unauthorized");
+        }
+    }
 });
 
 // GET route for a specific user by id
-router.get("/:id", (req, res) => {
-    users.findByPk({
-        where: {
-            id: req.params.id,
-        },
-    }).then((data) => {
-        res.json(data);
-    });
+router.get("/:id", async (req, res) => {
+    if (!req.token) {
+        res.status(401).send("Unauthenticated");
+    } else {
+        if (req.params.id == req.userId || (await isAdmin(req.userId))) {
+            const user = await User.findByPk(req.params.id);
+            if (user == null) {
+                res.status(400).send("No user with that id.");
+            } else {
+                res.send(user);
+            }
+        } else {
+            res.status(403).send("Unauthorized");
+        }
+    }
 });
 
 // GET route for a specific user by name
-router.get("/:name", (req, res) => {
-    users.findOne({
-        where: {
-            name: req.params.name,
-        },
-    }).then((data) => {
-        res.json(data);
-    });
+router.get("/name/:name", async (req, res) => {
+    if (!req.token) {
+        res.status(401).send("Unauthenticated");
+    } else {
+        const user = await User.findOne({
+            where: {
+                firstName: req.params.name,
+            },
+        });
+
+        if (user == null) {
+            res.status(400).send("No user with that name.");
+        } else {
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                res.send(user);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
+        }
+    }
 });
 
 // GET route for a specific user by email
-router.get("/:email", (req, res) => {
-    users.findOne({
-        where: {
-            email: req.params.email,
-        },
-    }).then((data) => {
-        res.json(data);
-    });
+router.get("/email/:email", async (req, res) => {
+    if (!req.token) {
+        res.status(401).send("Unauthenticated");
+    } else {
+        const user = await User.findOne({
+            where: {
+                email: req.params.email,
+            },
+        });
+        if (user == null) {
+            res.status(400).send("No user with that name.");
+        } else {
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                res.send(user);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
+        }
+    }
 });
 
-router.post('/register', async (req, res) => {
-    const { firstName, password } = req.body;
+// POST route to register a new user
+router.post("/register", async (req, res) => {
+    const { email, password } = req.body;
     try {
-        await sequelize.sync({force: true});
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ firstName : firstName, password: hashedPassword });
-        console.log(user)
-        res.send(`successfully created user ${user.firstName}`);
+        const user = await User.create({
+            email: email,
+            password: hashedPassword,
+        });
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        res.send({ user, token });
     } catch (error) {
-        console.error(error);
-        next(error)
+        res.send(error);
     }
 });
-  
-router.post('/login', async (req, res) => {
-    const { firstName, password } = req.body;
-    try {
-      const user = await User.findOne({ where: { firstName } });
-      if (!user) {
-        return res.status(401).send({ message: 'Invalid firstName or password' });
-      }
-      // Compare the submitted password to the hashed password stored in the database
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        return res.status(401).send({ message: 'Invalid firstName or password' });
-      }
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-      res.send({ user, token });
-    } catch (err) {
-      console.log(err);
-      res.status(400).send({ message: 'Invalid firstName or password' });
-    }
-  });
 
+// POST route to login for users
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            res.status(401).send({ message: "Invalid firstName or password" });
+        }
+
+        // If user is admin (since we didn't think this before hand. We don't want to compare passwords using bcrypt)
+        if (user.isAdmin) {
+            if (user.password == password) {
+                // Admin token will be good for 10 hours.
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+                    expiresIn: "10h",
+                });
+                res.send({ user, token });
+            } else {
+                res.status(401).send({ message: "Invalid email or password" });
+            }
+        } else {
+            // Compare the submitted password to the hashed password stored in the database
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (!passwordMatch) {
+                res.status(401).send({ message: "Invalid email or password" });
+            } else {
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+                    expiresIn: "1h",
+                });
+                res.send({ user, token });
+            }
+        }
+    } catch (err) {
+        res.status(401).send("Invalid email or password");
+    }
+});
+
+// PUT route to update a user using the ID as PK.
+router.put("/:id", async (req, res) => {
+    if (!req.token) {
+        res.status(401).send("Unauthenticated");
+    } else {
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            age,
+            favoritePokemon,
+            avatarImg,
+        } = req.body;
+
+        const user = await User.findByPk(req.params.id);
+
+        if (user == null) {
+            res.status(400).send("No user with that name.");
+        } else {
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                user.update({
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    age,
+                    favoritePokemon,
+                    avatarImg,
+                });
+                res.send(user);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
+        }
+    }
+});
+// DELETE route to delete an user using the ID as PK.
+router.delete("/:id", async (req, res) => {
+    if (!req.token) {
+        res.status(401).send("Unauthenticated");
+    } else {
+        const user = await User.findByPk(req.params.id);
+        if (user == null) {
+            res.status(400).send(
+                `User with id: ${req.params.id} was not found.`
+            );
+        } else {
+            if (user.id == req.userId || (await isAdmin(req.userId))) {
+                await user.destroy();
+                res.send(`User with id: ${req.params.id} was deleted.`);
+            } else {
+                res.status(403).send("Unauthorized");
+            }
+        }
+    }
+});
+
+const isAdmin = async (userId) => {
+    const user = await User.findByPk(userId);
+    if (user) {
+        if (user.isAdmin == null || !user.isAdmin) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+};
 module.exports = router;

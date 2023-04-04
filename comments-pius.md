@@ -4,6 +4,35 @@ Feel free to delete file as needed.  Comments below are from Pius as of 3/15/23 
 
 ## Technical Goals
 
+## Comments before Week 10 Presentations
+
+### Technical Goals
+
+1. Requirements:
+
+2. Testing:
+
+3. Logic:
+
+4. Style:
+
+### Collaboration Goals
+
+1. Commit history shows descriptive messages.
+2. Looks like majority of code addition or troubleshooting came from `Nando81k` and `NoelCov`.  What does the team think of contributions from `botirmasharipov`, `horbachoff`, and `Emil-Deleon-Clover`?  In the Week 9 check-ins, the team said people did a good job working in parallel, so how does get reflected in the code? How could this be improved or clarified if you were to do this over?
+
+### General Questions/Comments
+
+1. Any thoughts on areas improvement needed in the way you're working together, in the middle of this project?
+
+---
+
+## Comments before Week 7 Review
+
+Feel free to delete file as needed.  Comments below are from Pius as of 3/15/23 morning:
+
+### Technical Goals
+
 1. Requirements:
     - MVP Endpoints not yet working for me without some modification; see comments in `app.js`
     - Good definition of a separate model for users who may be admins.  At the same time, what is the `admin.js` route for?  Not that it's a bad thing -- I just don't know how it's different from the `users` route.
@@ -19,11 +48,11 @@ Feel free to delete file as needed.  Comments below are from Pius as of 3/15/23 
     - eventually would like Readme/docs to describe setup/depoyment/use of app, not needed now
     - Good separation of concerns! File structure uses routes well, organized folders.  Keep that up.
 
-## Collaboration Goals
+### Collaboration Goals
 
 1. Commit history is regular, with descriptive commit messages.
 2. Would like to get Emil caught up to make commits -- what will be Emil's focus in Week 7+?
 
-## General Questions/Comments
+### General Questions/Comments
 
 1. Any thoughts on areas improvement needed in the way you're working together, in the middle of this project?

@@ -1,7 +1,7 @@
-const { sequelize } = require('../db/db');
-const { DataTypes } = require('sequelize');
+const { sequelize } = require("../db/db");
+const { DataTypes } = require("sequelize");
 
-const User = sequelize.define('user', {
+const User = sequelize.define("user", {
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
     email: DataTypes.STRING,
@@ -9,7 +9,7 @@ const User = sequelize.define('user', {
     age: DataTypes.INTEGER,
     favoritePokemon: DataTypes.STRING,
     avatarImg: DataTypes.STRING,
-    isAdmin: DataTypes.BOOLEAN
-  });
-  
-  module.exports = { User };
+    isAdmin: DataTypes.BOOLEAN,
+});
+
+module.exports = { User };
