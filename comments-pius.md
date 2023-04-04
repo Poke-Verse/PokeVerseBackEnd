@@ -10,16 +10,24 @@ Feel free to delete file as needed.  Comments below are from Pius as of 3/15/23 
 
 1. Requirements:
     - Storing the Admin passwords directly in the db is unsafe (as you noted in the code check-in in Week 9).  Hash the password before seeding; store the plaintext password somewhere else.  Is that just for demo purposes?  Fortunately you do hash the passwords for new regular users, and you check the hashes, so that's good.
+    - Where are you with deployment?
 2. Testing:
-    - Sample tests would be helpful so there's a record of testing, since you don't use Jest or the Supertest library.  Could list sample Postman requests in the Readme, share Postman collection, etc.
+    - Sample tests would be helpful so there's a record of testing, since you don't use Jest or the Supertest library.  Could list sample Postman requests in the Readme, share Postman collection, etc.  
+    - Tests generally seem to work across endpoints after logging in to admin, or logging into non-admin created accounts with JWT bearer tokens (when testing randomly).
 3. Logic:
+    - Had to redefine the references to the sequelize library in the `user` and `pokemon` models to get server working on my machine.
     - Seeding the database works well.
-    - Agreed that code organization is good, separate folders for db, models, routes.
-    - Had to redefine the references to the sequelize library in the user and pokemon models to get server working.
+    - Agreed w/ Week 9 check-in that code organization is good, separate folders for db, models, routes.
+    - Your admin endpoints include sensitive data in the URL (name, email), which isn't standard practice, since that's more easily abused.  This might be a case where you woul use a POST/PUT request so it has to be part of the body request outside the URL.
+    - Several `null` properties output in form the pokemon output, including `regionalPokeDexId` and `pokedexEntry` even though in theory you have it in the seed data.  Looks like a slight naming mismatch in models/routes.
 4. Style:
+    - Good route names following RESTful conventions; consistent and standard SQL model names.
+    - README has good intro of basic setup, including installation, .env file, etc.
     - README could be more specific about the endpoint URLs, e.g. `/api/users/` as root URL for the users.
     - README: What body params are needed for the POST/PUT requests?  Any query params needed? for GET requests?
     - README: What's the workflow for using the API?  Should I register first? 
+    - Filtering Pokemon by "name" may be better as query params, since there are so many names, and to let users search for parts of names. Otherwise good use of regular URL params.
+
 ### Collaboration Goals
 
 1. Commit history shows descriptive messages.
